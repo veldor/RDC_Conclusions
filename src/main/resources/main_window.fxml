@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox xmlns="http://javafx.com/javafx/10.0.2-internal" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ui_controllers.MainController"
+onKeyPressed="#handleHotkeys">
+   <MenuBar>
+         <Menu mnemonicParsing="false" text="База данных">
+             <MenuItem
+                     mnemonicParsing="false"
+                     text="Заполнить"
+                     onAction="#openDatabaseFill"
+             />
+             <MenuItem
+                     mnemonicParsing="false"
+                     text="Настройки"
+                     onAction="#openDatabaseSettings"
+             />
+             <MenuItem
+                     mnemonicParsing="false"
+                     text="Убить базу"
+                     onAction="#truncateDatabase"
+             />
+         </Menu>
+   </MenuBar>
+</VBox>

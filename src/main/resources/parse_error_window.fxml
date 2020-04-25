@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox xmlns="http://javafx.com/javafx/10.0.2-internal" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ui_controllers.ParseErrorController">
+
+    <Label fx:id="errorTextLabel" textAlignment="CENTER">
+      <VBox.margin>
+         <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+      </VBox.margin></Label>
+   <ButtonBar>
+     <buttons>
+         <Button mnemonicParsing="false" onAction="#openConclusion" text="Открыть заключение" />
+       <Button mnemonicParsing="false" onAction="#openFolder" text="Открыть папку с заключением" />
+         <Button mnemonicParsing="false" onAction="#retryFileScan" text="Повторить" />
+     </buttons>
+   </ButtonBar>
+</VBox>
