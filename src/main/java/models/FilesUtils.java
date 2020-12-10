@@ -49,4 +49,14 @@ public class FilesUtils {
         }
         return null;
     }
+
+    public static void changeTempFolder(Stage stage) throws IOException {
+        DirectoryChooser directoryChooser = new DirectoryChooser();
+        File selectedDirectory = directoryChooser.showDialog(stage);
+        if(selectedDirectory == null){
+            //No Directory selected
+        }else{
+            Settings.getInstance().setTempDir(selectedDirectory);
+        }
+    }
 }

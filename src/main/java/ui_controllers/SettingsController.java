@@ -1,5 +1,6 @@
 package ui_controllers;
 
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
 import javafx.stage.Stage;
@@ -9,7 +10,9 @@ import models.handlers.GrammarHandler;
 
 import java.io.IOException;
 
-public class DbSettingsController implements Controller{
+public class SettingsController implements Controller{
+
+    public Label tempFolder;
     private Stage mStage;
 
     @FXML
@@ -31,5 +34,14 @@ public class DbSettingsController implements Controller{
 
     private void changeDatabaseLocationLabel() {
         currentBaseFolder.setText(GrammarHandler.getDirValue(Settings.getInstance().getBaseDir()));
+    }
+
+    public void changeTempFolder() throws IOException {
+        FilesUtils.changeTempFolder(mStage);
+        changeTempLocationLabel();
+    }
+
+    private void changeTempLocationLabel() {
+        tempFolder.setText(GrammarHandler.getDirValue(Settings.getInstance().getTempDir()));
     }
 }

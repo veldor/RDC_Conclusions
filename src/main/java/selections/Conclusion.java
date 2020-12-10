@@ -1,6 +1,10 @@
 package selections;
 
+import models.handlers.FilesHandler;
+import models.handlers.GrammarHandler;
 import models.handlers.StringsHandler;
+
+import java.text.ParseException;
 
 public class Conclusion {
 
@@ -22,12 +26,25 @@ public class Conclusion {
     private String path;
 
 
-    public static Builder newBuilder() {
-        return new Conclusion().new Builder();
+    public static Builder newBuilder(boolean skipWholenessCheck) {
+        return new Conclusion().new Builder(skipWholenessCheck);
     }
 
     public boolean isFilled() {
-        return personals != null && birthDate != null && sex != null && executionArea != null && isContrast != null && executionNumber != null && executionDate != null && diagnostician != null && conclusionText != null && md5 != null && changeTime != -1 && fileName != null && path != null;
+        return
+                personals != null && !personals.isEmpty() &&
+                        birthDate != null && !birthDate.isEmpty() &&
+                        sex != null && !sex.isEmpty() &&
+                        executionArea != null && !executionArea.isEmpty() &&
+                        isContrast != null && !isContrast.isEmpty() &&
+                        executionNumber != null && !executionNumber.isEmpty() &&
+                        executionDate != null && !executionDate.isEmpty() &&
+                        diagnostician != null && !diagnostician.isEmpty() &&
+                        conclusionText != null && !conclusionText.isEmpty() &&
+                        md5 != null &&
+                        changeTime != -1 &&
+                        fileName != null &&
+                        path != null;
     }
 
     /**
@@ -55,7 +72,7 @@ public class Conclusion {
      * @return <p>Birth date in format 01.01.01</p>
      */
     public String getBirthDate() {
-        return StringsHandler.clearDate(birthDate);
+        return birthDate;
     }
 
     public String getDiagnostician() {
@@ -98,53 +115,89 @@ public class Conclusion {
         return path;
     }
 
+    public String getSkipperParameter() {
+        if (personals.isEmpty()) {
+            return "Не заполнены Ф.И.О. пациента";
+        }
+        if (birthDate.isEmpty()) {
+            return "Не заполнена дата рождения пациента";
+        }
+        if (sex.isEmpty()) {
+            return "Не заполнен пол пациента";
+        }
+        if (executionArea.isEmpty()) {
+            return "Не заполнена область обследования пациента";
+        }
+        if (isContrast.isEmpty()) {
+            return "Не заполнены сведения о контрастном веществе";
+        }
+        if (executionNumber.isEmpty()) {
+            return "Не заполнен номер обследования";
+        }
+        if (executionDate.isEmpty()) {
+            return "Не заполнена дата обследования";
+        }
+        if (diagnostician.isEmpty()) {
+            return "Не заполнены сведения о докторе";
+        }
+        if (conclusionText.isEmpty()) {
+            return "Нет текста заключения";
+        }
+        return "Не заполнено что-то, а я не понял, что :( Дайте знать разработчику";
+    }
+
     public class Builder {
-        private Builder() {
+
+        private final boolean mSkipCheck;
+
+        private Builder(boolean skipWholenessCheck) {
+            mSkipCheck = skipWholenessCheck;
         }
 
         public Conclusion build() {
-            // проверю, все ли параметры заполнены
-            if (Conclusion.this.personals == null) {
-                throw new IllegalArgumentException("Не заполнены персональные данные");
+            if (!mSkipCheck) {
+                // проверю, все ли параметры заполнены
+                if (Conclusion.this.personals == null) {
+                    throw new IllegalArgumentException("Не заполнены персональные данные");
+                }
+                if (Conclusion.this.birthDate == null) {
+                    throw new IllegalArgumentException("Не заполнена дата рождения");
+                }
+                if (Conclusion.this.sex == null) {
+                    throw new IllegalArgumentException("Не заполнен пол");
+                }
+                if (Conclusion.this.executionArea == null) {
+                    throw new IllegalArgumentException("Не заполнена область обследования");
+                }
+                if (Conclusion.this.isContrast == null) {
+                    throw new IllegalArgumentException("Не заполнены сведения о контрастном веществе");
+                }
+                if (Conclusion.this.executionNumber == null) {
+                    throw new IllegalArgumentException("Не заполнен номер обследования");
+                }
+                if (Conclusion.this.executionDate == null) {
+                    throw new IllegalArgumentException("Не заполнена дата обследования");
+                }
+                if (Conclusion.this.diagnostician == null) {
+                    throw new IllegalArgumentException("Не заполнено имя врача");
+                }
+                if (Conclusion.this.conclusionText == null) {
+                    throw new IllegalArgumentException("Не заполнен тект заключения");
+                }
+                if (Conclusion.this.md5 == null) {
+                    throw new IllegalArgumentException("Не удалось посчитать md5");
+                }
+                if (Conclusion.this.changeTime < 0) {
+                    throw new IllegalArgumentException("Неверное время последнего изменения файла");
+                }
+                if (Conclusion.this.fileName == null) {
+                    throw new IllegalArgumentException("Пустое имя файла");
+                }
+                if (Conclusion.this.path == null) {
+                    throw new IllegalArgumentException("Пуст путь к файлу");
+                }
             }
-            if (Conclusion.this.birthDate == null) {
-                throw new IllegalArgumentException("Не заполнена дата рождения");
-            }
-            if (Conclusion.this.sex == null) {
-                throw new IllegalArgumentException("Не заполнен пол");
-            }
-            if (Conclusion.this.executionArea == null) {
-                throw new IllegalArgumentException("Не заполнена область обследования");
-            }
-            if (Conclusion.this.isContrast == null) {
-                throw new IllegalArgumentException("Не заполнены сведения о контрастном веществе");
-            }
-            if (Conclusion.this.executionNumber == null) {
-                System.out.println(Conclusion.this.conclusionText);
-                throw new IllegalArgumentException("Не заполнен номер обследования");
-            }
-            if (Conclusion.this.executionDate == null) {
-                System.out.println(Conclusion.this.conclusionText);
-                throw new IllegalArgumentException("Не заполнена дата обследования");
-            }
-            if (Conclusion.this.diagnostician == null) {
-                throw new IllegalArgumentException("Не заполнено имя врача");
-            }
-            if (Conclusion.this.conclusionText == null) {
-                throw new IllegalArgumentException("Не заполнен тект заключения");
-            }
-            if (Conclusion.this.md5 == null) {
-                throw new IllegalArgumentException("Не удалось посчитать md5");
-            }
-            if (Conclusion.this.changeTime < 0) {
-                throw new IllegalArgumentException("Неверное время последнего изменения файла");
-            }
-            if (Conclusion.this.fileName == null) {
-                throw new IllegalArgumentException("Пустое имя файла");
-            }
-            if (Conclusion.this.path == null) {
-                throw new IllegalArgumentException("Пуст путь к файлу");
-            }
+
             return Conclusion.this;
         }
 
@@ -152,22 +205,16 @@ public class Conclusion {
             Conclusion.this.personals = parameter;
         }
 
-        public void setBirthDate(String parameter) {
-            // проверю, что дата рождения в правильном формате
-            parameter = StringsHandler.clearDate(parameter);
-            if(parameter.length() > 10){
-                if(parameter.endsWith("г.")){
-                    // обрежу год и пропробую ещё раз
-                    parameter = parameter.substring(0, parameter.length() - 2).trim();
-                    if(parameter.length() <= 10){
-                        Conclusion.this.birthDate = parameter;
-                        return;
-                    }
+        public void setBirthDate(String parameter) throws ParseException {
+            if (mSkipCheck) {
+                try {
+                    Conclusion.this.birthDate = GrammarHandler.normalizeDateForDb(parameter);
+                } catch (Exception e) {
+                    System.out.println("Неверно введена дата рождения: " + parameter);
                 }
-                System.out.println(Conclusion.this.conclusionText);
-                throw new IllegalArgumentException("Некорректная дата рождения");
+            } else {
+                Conclusion.this.birthDate = GrammarHandler.normalizeDateForDb(parameter);
             }
-            Conclusion.this.birthDate = parameter;
         }
 
         public void setSex(String parameter) {
@@ -175,16 +222,12 @@ public class Conclusion {
             parameter = StringsHandler.clearText(parameter);
             if (parameter.length() > 0) {
                 if ("муж".equals(parameter)) {
-                    //System.out.println("it's male");
                     Conclusion.this.sex = "male";
                 } else if ("жен".equals(parameter)) {
-                    //System.out.println("it's female");
                     Conclusion.this.sex = "female";
                 } else {
-                    throw new IllegalArgumentException("Пол не соответствует шаблону");
+                    Conclusion.this.sex = "unknown";
                 }
-            } else {
-                throw new IllegalArgumentException("Пол не соответствует шаблону");
             }
         }
 
@@ -197,15 +240,28 @@ public class Conclusion {
         }
 
         public void setExecutionNumber(String parameter) {
-            Conclusion.this.executionNumber = StringsHandler.clearWhitespaces(parameter);
+            Conclusion.this.executionNumber = StringsHandler.handleId(StringsHandler.clearWhitespaces(parameter));
         }
 
-        public void setExecutionDate(String parameter) {
-            Conclusion.this.executionDate = parameter;
+        public void setExecutionDate(String parameter) throws ParseException {
+            // тут буду перегонять дату в формат mysql
+            if (mSkipCheck) {
+                try {
+                    Conclusion.this.executionDate = GrammarHandler.normalizeDateForDb(parameter);
+                } catch (Exception e) {
+                    System.out.println("Неверно введена дата обследования: " + parameter);
+                }
+            } else {
+                Conclusion.this.executionDate = GrammarHandler.normalizeDateForDb(parameter);
+            }
         }
 
-        public void setDiagnostician(String parameter) {
-            Conclusion.this.diagnostician = parameter;
+        public boolean setDiagnostician(String parameter) {
+            if(parameter != null && !parameter.isEmpty()){
+                Conclusion.this.diagnostician = parameter;
+                return true;
+            }
+            return false;
         }
 
         public Builder setText(String text) {
@@ -218,9 +274,8 @@ public class Conclusion {
             return this;
         }
 
-        public Builder setChangeTime(long parameter) {
+        public void setChangeTime(long parameter) {
             Conclusion.this.changeTime = parameter;
-            return this;
         }
 
         public Builder setFileName(String parameter) {
@@ -240,11 +295,11 @@ public class Conclusion {
             // сначала- некритичные данные: пол, наличие контраста
             if (Conclusion.this.sex == null || Conclusion.this.sex.length() == 0) {
                 Conclusion.this.sex = "unknown";
-                System.out.println("В описании не обнаружена ссылка на пол");
+                FilesHandler.addToLog("В описании не обнаружена ссылка на пол: ", Conclusion.this.path);
             }
             if (Conclusion.this.isContrast == null || Conclusion.this.isContrast.length() == 0) {
                 Conclusion.this.isContrast = "Не проводилось";
-                System.out.println("В описании не обнаружена ссылка на введение контрастного вещества");
+                FilesHandler.addToLog("В описании не обнаружена ссылка на введение контрастного вещества: ", Conclusion.this.path);
             }
         }
     }

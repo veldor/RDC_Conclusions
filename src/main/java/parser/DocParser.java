@@ -17,49 +17,63 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.StringReader;
 
-public class DocParser  extends InitialParser{
+public class DocParser extends InitialParser {
 
+    private final SAXParserFactory factory;
     private final SAXParser mParser;
     private final XMLHandler mHandler;
     Document doc;
+    private FileInputStream fis;
+    private String mText;
+    private StringReader stringReader;
+    private InputSource inputSource;
+    private String value;
 
-    private static DocParser instance;
-
-    public static DocParser getInstance() throws ParserConfigurationException, SAXException {
-        if (instance == null) {
-            instance = new DocParser();
-        }
-        return instance;
-    }
-
-    private DocParser() throws ParserConfigurationException, SAXException {
-        SAXParserFactory factory = SAXParserFactory.newInstance();
+    DocParser() throws ParserConfigurationException, SAXException {
+        factory = SAXParserFactory.newInstance();
         mParser = factory.newSAXParser();
         mHandler = new XMLHandler();
         mLinesHandler = new LinesHandler();
     }
 
-    public Conclusion parse(File f) throws Exception {
+    public Conclusion parse(File f, boolean skipWholenessCheck) throws Exception {
+        sKokuninFormat = false;
         isDocFound = false;
         isSexFound = false;
-        conclusionBuilder = Conclusion.newBuilder();
-        conclusionBuilder.setFileName(f.getName()).setPath(f.getAbsolutePath()).setMd5(Checksum.checksum(f)).setChangeTime(f.lastModified());
-        doc = new Document(new FileInputStream(f));
-        String mText = doc.toString(SaveFormat.HTML);
-        // обработаю XML, найдя при этом пол пациента и имя врача, так как они в select
-        // и схлопываются во время поиска по тексту
-        mParser.parse(new InputSource(new StringReader(mText)), mHandler);
-        mText = doc.toString(SaveFormat.TEXT);
-        conclusionBuilder.setText(mText);
-        // теперь найду остальные параметры прохождением по строкам
-        mLinesHandler.loadTest(mText);
-        mLinesHandler.parse();
-        conclusionBuilder.checkParameterFilling();
+        spendConclusion = false;
+        try{
+            conclusionBuilder = Conclusion.newBuilder(skipWholenessCheck);
+            conclusionBuilder.setFileName(f.getName()).setPath(f.getAbsolutePath()).setMd5(Checksum.checksum(f)).setChangeTime(f.lastModified());
+            fis = new FileInputStream(f);
+            doc = new Document(fis);
+            mText = doc.toString(SaveFormat.HTML);
+            stringReader = new StringReader(mText);
+            inputSource = new InputSource(stringReader);
+            mText = doc.toString(SaveFormat.TEXT);
+            conclusionBuilder.setText(mText);
+            mLinesHandler.loadText(mText);
+            // обработаю XML, найдя при этом пол пациента и имя врача, так как они в select
+            // и схлопываются во время поиска по тексту
+            mParser.parse(inputSource, mHandler);
+            // теперь найду остальные параметры прохождением по строкам
+            mLinesHandler.parse();
+            if(!skipWholenessCheck){
+                conclusionBuilder.checkParameterFilling();
+            }
+        }
+        finally {
+            if(fis != null){
+                fis.close();
+            }
+            if(stringReader != null){
+                stringReader.close();
+            }
+
+        }
         return conclusionBuilder.build();
     }
 
     private class XMLHandler extends DefaultHandler {
-
 
         private boolean mSelectFound = false;
         private boolean mOptionFound = false;
@@ -83,6 +97,10 @@ public class DocParser  extends InitialParser{
         public void endElement(String uri, String localName, String qName) {
             // Тут будет логика реакции на конец элемента
             if (qName.equals("select")) {
+                if(mDocFound && ! mOptionFound){
+                    DocParser.this.conclusionBuilder.setDiagnostician(DOC_NOT_SELECTED);
+                    DocParser.this.isDocFound = true;
+                }
                 mSelectFound = false;
                 mDocFound = false;
             }
@@ -94,12 +112,13 @@ public class DocParser  extends InitialParser{
         @Override
         public void characters(char[] ch, int start, int length) {
             if (mOptionFound) {
+                value = new String(ch, start, length);
                 if (mDocFound) {
                     // внесу данные о докторе
-                    DocParser.this.conclusionBuilder.setDiagnostician(StringsHandler.cutDoc(new String(ch, start, length)));
+                    DocParser.this.conclusionBuilder.setDiagnostician(StringsHandler.cutDoc(value));
                     DocParser.this.isDocFound = true;
                 } else {
-                    DocParser.this.conclusionBuilder.setSex(new String(ch, start, length));
+                    DocParser.this.conclusionBuilder.setSex(value);
                     DocParser.this.isSexFound = true;
                 }
             }

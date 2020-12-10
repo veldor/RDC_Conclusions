@@ -2,14 +2,16 @@ package utils;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.security.MessageDigest;
 
 public class Checksum {
 
     public static String checksum(File input) {
+        InputStream in = null;
         try {
-            InputStream in = new FileInputStream(input);
+            in = new FileInputStream(input);
             MessageDigest digest = MessageDigest.getInstance("MD5");
             byte[] block = new byte[4096];
             int length;
@@ -26,6 +28,16 @@ public class Checksum {
         } catch (Exception e) {
             e.printStackTrace();
         }
+        finally {
+            if(in != null){
+                try {
+                    in.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        System.out.println("something wrong with md5...");
         return null;
     }
 }

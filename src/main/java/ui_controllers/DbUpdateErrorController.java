@@ -11,13 +11,14 @@ import sun.misc.Queue;
 import java.io.File;
 import java.io.IOException;
 
-public class ParseErrorController implements Controller{
+public class DbUpdateErrorController implements Controller{
 
     @FXML
     public
     Label errorTextLabel;
     private File mErrorFile;
-    private DbFillController mParentController;
+    private Queue<String> mQueue;
+    private MainController mParentController;
     private Stage mOwner;
 
     public void init(Stage owner) {
@@ -37,16 +38,18 @@ public class ParseErrorController implements Controller{
 
     @FXML
     public void retryFileScan() {
+        // продолжу процесс с проблемного места
+        FilesParser filesParser = new FilesParser();
+        filesParser.updateDatabase(mParentController);
         mOwner.close();
-        mParentController.parseErrorFile(mErrorFile);
     }
 
-    public void setActions(File f, Exception e, DbFillController parentController) {
+    public void setActions(File f, MainController parentController) {
         mErrorFile = f;
         mParentController = parentController;
     }
 
-    public void deleteProblemFile() throws InterruptedException {
+    public void deleteProblemFile() {
         if(mErrorFile.delete()){
             retryFileScan();
         }
